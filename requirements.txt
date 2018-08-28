@@ -1,0 +1,6 @@
+premailer
+requests
+beautifulsoup4
+html5lib
+tox
+Flask
