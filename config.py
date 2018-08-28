@@ -43,8 +43,10 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko
 
 # Exclude email from mailing if whole email match
 EXCLUDE_EMAILS         = json_config["exclude_emails"]
+
 # Exclude email from mailing if part of email match
 EXCLUDE_EMAILS_CONTAIN = json_config["exclude_emails_contain"]
+
 # Exlude email from DNS check if part of email match or whole email match
 EXCLUDE_DNS_CHECK      = json_config["exclude_dns_check"]
 
