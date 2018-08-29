@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js" charset="utf-8"></script>
+        <title></title>
+        <style media="screen">
+        @media print {
+              h2 {
+                page-break-before: always;
+              }
+              h3, h4 {
+                page-break-after: avoid;
+              }
+              pre, blockquote {
+                page-break-inside: avoid;
+              }
+              table {
+                  page-break-before: always;
+                  page-break-after:always
+              }
+              tr    {
+                  page-break-before: always;
+                  page-break-after:always
+              }
+              thead {
+                  page-break-before: always;
+                  page-break-after:always
+              }
+              tfoot {
+                  page-break-before: always;
+                  page-break-after:always
+              }
+          }
+
+        </style>
+    </head>
+    <body ng-app="ReportApp">
+        <div class="container" ng-controller="ReportCtrl">
+            <div class="row">
+                <div class="col-12 mt-2 text-center">
+                    <img ng-src="{{data.company_logo_url}}" alt="logo">
+                    <hr>
+                </div>
+
+                <div class="col-12">
+                    <h5 class="text-center">
+                        Mailing: {{data.tag.tag}}
+                    </h5>
+                    <h5 class="text-center">
+                        Stworzono: {{tag_first_seen}}
+                    </h5>
+                    <hr>
+                </div>
+                <div class="col-12">
+                    <h2 class="text-center">
+                        Przegląd
+                    </h2>
+                    <table class="table mt-4">
+                    <tbody>
+                    <tr>
+                    <th scope="row">Zaakceptowane</th>
+                        <td>{{data.accepted}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Dostarczone</th>
+                        <td>{{data.delivered}} ({{ (data.delivered/data.accepted)*100|number:2 }}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Odbić twardych</th>
+                        <td>{{data.failed_permanent}} ({{ (data.failed_permanent/data.accepted)*100|number:2 }}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Nie ustalono</th>
+                        <td>{{data.accepted - (data.delivered+data.failed_permanent)}} ({{ ((data.accepted - (data.delivered+data.failed_permanent))/data.accepted)*100|number:2 }}%)</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Otworzono</th>
+                        <td>{{data.opened}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Otworzono unikalnie</th>
+                        <td>{{data.opened_unique}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Kliknięto</th>
+                        <td>{{data.clicked}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Kliknięto unikalnie</th>
+                        <td>{{data.clicked_unique}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Skarg</th>
+                        <td>{{data.complained}}</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Odsubskrybowało</th>
+                        <td>{{data.unsubscribed}}</td>
+                    </tr>
+                    </tbody>
+                    </table>
+                </div>
+
+                <div class="col-12">
+                    <h2 class="text-center">
+                        Urządzenia
+                    </h2>
+
+                    <table class="table table-striped mt-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Otwarto</th>
+                            <th scope="col">Otwarto unikalnie</th>
+                            <th scope="col">Kliknięto</th>
+                            <th scope="col">Kliknięto unikalnie</th>
+                            <th scope="col">Odsubskrybowano</th>
+                            <th scope="col">Skarg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(key, value) in data.devices">
+                        <th scope="row">{{key}}</th>
+                            <td>{{value.opened}}</td>
+                            <td>{{value.unique_opened}}</td>
+                            <td>{{value.clicked}}</td>
+                            <td>{{value.unique_clicked}}</td>
+                            <td>{{value.unsubscribed}}</td>
+                            <td>{{value.complained}}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+
+                <div class="col-12">
+                    <h2 class="text-center">
+                        Kraje
+                    </h2>
+
+                    <table class="table table-striped mt-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Otwarto</th>
+                            <th scope="col">Otwarto unikalnie</th>
+                            <th scope="col">Kliknięto</th>
+                            <th scope="col">Kliknięto unikalnie</th>
+                            <th scope="col">Odsubskrybowano</th>
+                            <th scope="col">Skarg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(key, value) in data.countries">
+                        <th scope="row">{{key}}</th>
+                            <td>{{value.opened}}</td>
+                            <td>{{value.unique_opened}}</td>
+                            <td>{{value.clicked}}</td>
+                            <td>{{value.unique_clicked}}</td>
+                            <td>{{value.unsubscribed}}</td>
+                            <td>{{value.complained}}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+
+                <div class="col-12">
+                    <h2 class="text-center">
+                        Szkrzynki pocztowe
+                    </h2>
+
+                    <table class="table table-striped mt-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Otwarto</th>
+                            <th scope="col">Otwarto unikalnie</th>
+                            <th scope="col">Kliknięto</th>
+                            <th scope="col">Kliknięto unikalnie</th>
+                            <th scope="col">Odsubskrybowano</th>
+                            <th scope="col">Skarg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(key, value) in data.providers">
+                        <th scope="row">{{key}}</th>
+                            <td>{{value.opened}}</td>
+                            <td>{{value.unique_opened}}</td>
+                            <td>{{value.clicked}}</td>
+                            <td>{{value.unique_clicked}}</td>
+                            <td>{{value.unsubscribed}}</td>
+                            <td>{{value.complained}}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        var app = angular.module("ReportApp", []);
+        app.controller("ReportCtrl", function($scope) {
+            $scope.data = [DATA];
+            $scope.tag_first_seen = new Date($scope.data.tag["first-seen"]).toLocaleDateString();
+        });
+    </script>
+</html>

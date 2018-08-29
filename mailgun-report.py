@@ -1,8 +1,11 @@
 from mgapi.mgapi import Api as MailgunApi
 import pprint as pp
 import config
-
-# GET /{domain}/tags/{tag}	get_tags
+import argparse
+import json
+import os
+import pycountry
+from textblob import TextBlob
 
 class Report(object):
 
@@ -10,6 +13,21 @@ class Report(object):
         self.api = MailgunApi(domain=config.MG_DOMAIN, private_key=config.MG_PRIVATE_KEY)
         self.tag = tag
         self.data = {}
+        print("[*] Creating report for:", self.tag)
+        self.gather()
+
+    def write_report(self):
+        print("[*] Saving report")
+        with open(os.path.join("resources", "report_template.html"),"rb") as template:
+            template_content = template.read()
+            template.close()
+
+        with open("report_%s.html" % self.tag, "wb") as dest:
+            report_data = json.dumps(self.data, indent=4, sort_keys=True).encode("utf8")
+            report_content = template_content.replace(b"[DATA]", report_data)
+            dest.write(report_content)
+            dest.close()
+        print(" - success")
 
     def aggregates_countries(self):
         print("- Getting aggregates countries")
@@ -68,8 +86,103 @@ class Report(object):
         else:
             print(devices["justify"]["reason"])
 
-        pp.pprint(self.data)
+parser = argparse.ArgumentParser(description="Mailgun Report")
+parser.add_argument("tag", help="Mailing tag")
+args = parser.parse_args()
+
+# Create report
+report = Report(args.tag)
 
 
-report = Report("DevTest")
-report.gather()
+data = {
+    "tag": report.data["tag_info"],
+    "company_logo_url": config.MG_LOGO,
+
+    "accepted": 0,
+    "delivered": 0,
+    "opened": 0,
+    "opened_unique": 0,
+    "clicked": 0,
+    "clicked_unique": 0,
+    "complained": 0,
+    "unsubscribed": 0,
+    "failed_permanent": 0,
+    "failed_temporary": 0,
+
+    "devices": {},
+    "providers": {},
+    "countries": {},
+}
+
+
+for k, v in report.data["devices"]["device"].items():
+    if k == "desktop": device_name = "Urządzenia stacjonarne";
+    if k == "mobile": device_name = "Urządzenia mobilne";
+    if k == "tablet": device_name = "Tablety";
+    if k == "unknown": device_name = "nieznany";
+
+    data["devices"][str(device_name)] = v
+
+for k, v in report.data["countries"]["country"].items():
+
+    save_record = False
+    for elem in v.values():
+        if elem != 0:
+            save_record = True
+            break
+
+    if save_record:
+
+        try:
+            country_name = pycountry.countries.lookup(k).name
+        except Exception as e:
+            country_name = "unknown"
+            print("[-] Exception:", e)
+
+        blob = TextBlob(country_name)
+        country_name = blob.translate(to="pl")
+
+        data["countries"][str(country_name)] = v
+
+for k, v in report.data["providers"]["provider"].items():
+
+    save_record = False
+    for elem in v.values():
+        if elem != 0:
+            save_record = True
+            break
+
+    if save_record:
+        data["providers"][k] = v
+
+for e in report.data["accepted_stats"]:
+    data["accepted"] += e["accepted"]["outgoing"]
+
+for e in report.data["delivered_stats"]:
+    data["delivered"] += e["delivered"]["total"]
+
+for e in report.data["opened_stats"]:
+    data["opened"] += e["opened"]["total"]
+    if "unique" in e["opened"].keys():
+        data["opened_unique"] += e["opened"]["unique"]
+
+for e in report.data["clicked_stats"]:
+    data["clicked"] += e["clicked"]["total"]
+    if "unique" in e["clicked"].keys():
+        data["clicked_unique"] += e["clicked"]["unique"]
+
+for e in report.data["complained_stats"]:
+    data["complained"] += e["complained"]["total"]
+
+for e in report.data["unsubscribed_stats"]:
+    data["unsubscribed"] += e["unsubscribed"]["total"]
+
+for e in report.data["failed_stats"]:
+    data["failed_permanent"] += e["failed"]["permanent"]["total"]
+    data["failed_temporary"] += e["failed"]["temporary"]["total"]
+
+report.data = data
+
+pp.pprint(data)
+
+report.write_report()
