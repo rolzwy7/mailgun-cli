@@ -7,6 +7,11 @@ import os
 import pycountry
 from textblob import TextBlob
 
+parser = argparse.ArgumentParser(description="Mailgun Report")
+parser.add_argument("tag", help="Mailing tag")
+args = parser.parse_args()
+
+
 class Report(object):
 
     def __init__(self, tag):
@@ -85,10 +90,6 @@ class Report(object):
             self.data["devices"] = devices
         else:
             print(devices["justify"]["reason"])
-
-parser = argparse.ArgumentParser(description="Mailgun Report")
-parser.add_argument("tag", help="Mailing tag")
-args = parser.parse_args()
 
 # Create report
 report = Report(args.tag)
