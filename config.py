@@ -12,13 +12,18 @@ json_config_path = "E:\\mailgun.json"
 # exclude_dns_check <list>
 # company_logo_url <str>
 
+PRINT_CONFIG = False
+
 json_config = None
 
 try:
     with open(json_config_path, "r") as source:
         json_config = json.loads(source.read())
-        print("[ JSON Config File ]")
-        pp.pprint(json_config)
+
+        if PRINT_CONFIG:
+            print("[ JSON Config File ]")
+            pp.pprint(json_config)
+
 except Exception as e:
     print("Error:", e)
     exit(0)
@@ -53,9 +58,10 @@ EXCLUDE_EMAILS_CONTAIN = json_config["exclude_emails_contain"]
 # Exlude email from DNS check if part of email match or whole email match
 EXCLUDE_DNS_CHECK      = json_config["exclude_dns_check"]
 
-print("\n[ BASIC ]")
-print("Domain     :", MG_DOMAIN)
-print("Private Key:", MG_PRIVATE_KEY)
-print("From       :", MG_FROM)
+if PRINT_CONFIG:
+    print("\n[ BASIC ]")
+    print("Domain     :", MG_DOMAIN)
+    print("Private Key:", MG_PRIVATE_KEY)
+    print("From       :", MG_FROM)
 
-print("\n\n")
+    print("\n\n")
