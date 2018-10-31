@@ -5,3 +5,4 @@ html5lib
 tox
 Flask
 pycountry
+Py3DNS

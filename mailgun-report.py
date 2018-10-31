@@ -140,8 +140,8 @@ for k, v in report.data["countries"]["country"].items():
             country_name = "unknown"
             print("[-] Exception:", e)
 
-        blob = TextBlob(country_name)
-        country_name = blob.translate(to="pl")
+        #blob = TextBlob(country_name)
+        country_name = country_name #blob.translate(to="pl")
 
         data["countries"][str(country_name)] = v
 

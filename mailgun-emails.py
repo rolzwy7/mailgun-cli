@@ -7,7 +7,7 @@ import string
 import requests
 
 parser = argparse.ArgumentParser(description="Mailgun Emails")
-parser.add_argument("emails_directory", help="")
+parser.add_argument("emails_directory", help="Emails directory")
 args = parser.parse_args()
 
 class EmailParser(object):
@@ -137,38 +137,19 @@ class EmailParser(object):
 
                         self.emails_all.append(str(email, "utf8"))
 
-        len_duplicates  = len(self.emails_all)
-        self.emails_all = list(set(self.emails_all))
+        with_duplicates = self.emails_all
+        without_duplicates = list(set(self.emails_all))
+
+        len_all = len(with_duplicates)
+        len_duplicates = len(with_duplicates) - len(without_duplicates)
         len_unique      = len(self.emails_all)
 
+        self.emails_all = without_duplicates
         self.emails_all = sorted(self.emails_all, key=str.lower)
 
-        print("")
-        print(" - Duplicates      : %s" % (len_duplicates))
-        print(" - Duplicates (%%)  : %.0f%%" % ((len_duplicates/(len_duplicates+len_unique)) * 100))
-        print(" - Unique          : %s" % (len_unique))
-        print(" - Unique     (%%)  : %.0f%%" % ((len_unique/(len_duplicates+len_unique)) * 100))
-
-    def websiteCheck(self, email):
-        flag = True
-        for element in config.EXCLUDE_DNS_CHECK:
-            if (element in email) or (element == domain):
-                flag = False
-                break
-
-        if flag:
-            try:
-                domain = "http://%s" % email.split("@")[-1]
-                headers = {
-                    "user-agent": config.USER_AGENT
-                }
-                result = requests.get(domain, headers=headers)
-                if result.status_code == 200:
-                    return True
-            except Exception as e:
-                print(e)
-
-        return False
+        print("All Emails : ", len_all)
+        print("Unique     : ", len(without_duplicates))
+        print("Duplicates : ", len_duplicates)
 
     def writeEmails(self):
         filepath = "Done_Emails.txt"
@@ -187,28 +168,28 @@ email_parser_object.getMailgunUnsubscribes()
 email_parser_object.getMailgunBounces()
 
 email_parser_object.gatherAllEmails()
-
-# ### Experimental website check
-# tmp = []
-# success, failed = 0,0
-# for email in email_parser_object.emails_all[:100]:
-#     if email_parser_object.websiteCheck(email):
-#         tmp.append(email)
-#         success += 1
-#     else:
-#         failed += 1
-#
-#     print(
-#         "\rSuccess: {success} | Failed: {failed} | Progress: {progress}\t\t".format(
-#             success=success,
-#             failed=failed,
-#             progress="%.2f%%" % ((success+failed)/len(email_parser_object.emails_all)*100)
-#         ),
-#         end=""
-#     )
-# tmp = list(set(tmp))
-# tmp = sorted(tmp, key=str.lower)
-# email_parser_object.emails_all = tmp
-# ### Experimental website check
-
 email_parser_object.writeEmails()
+
+
+# # Check SMTP servers
+# from email_check import dns_check
+# _edc = config.EXCLUDE_DNS_CHECK
+# email_all_temp = []
+#
+# for email in email_parser_object.emails_all:
+#     domain_temp = email.split("@")[-1]
+#
+#     # Trusted domain
+#     if domain_temp in _edc:
+#         print("Trusted      :", email)
+#         email_all_temp.append(email)
+#         continue
+#
+#     # mx check
+#     has_mx = dns_check.validate_email(email, check_mx=True, verify=True)
+#     if not has_mx:
+#         print("Mx not found :", email)
+#     else:
+#         print("Mx found     :", email)
+#         _edc.append(domain_temp)
+#         email_all_temp.append(email)
