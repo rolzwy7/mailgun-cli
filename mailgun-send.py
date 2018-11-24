@@ -9,17 +9,19 @@ arguments = {
     "subject": "--subject",
     "tag": "--tag",
     "html": "--html",
+    "text": "--text",
 }
 
 parser.add_argument(arguments["to"]      , help="To mail filed")
 parser.add_argument(arguments["subject"] , help="Subject mail field")
 parser.add_argument(arguments["tag"]     , help="Tracking tag")
 parser.add_argument(arguments["html"]    , help="Path to HTML file with mail template")
+parser.add_argument(arguments["text"]    , help="Path to TEXT file with mail template")
 args = parser.parse_args()
 
 class Send(object):
 
-    def __init__(self, to, subject, tag, html):
+    def __init__(self, to, subject, tag, html, text):
         self.api     = MailgunApi(domain=config.MG_DOMAIN, private_key=config.MG_PRIVATE_KEY)
         self.From    = config.MG_FROM
         self.to      = to
@@ -31,12 +33,18 @@ class Send(object):
             source.close()
             print("[+] HTML version read successfully")
 
+        with open(text, "rb") as source:
+            self.text = source.read()
+            source.close()
+            print("[+] TEXT version read successfully")
+
     def printConfig(self):
         print("From    :", self.From)
         print("To      :", self.to)
         print("Subject :", self.subject)
         print("Tag     :", self.tag)
         print("HTML    :", len(self.html), "bytes")
+        print("TEXT    :", len(self.text), "bytes")
 
     def send(self):
         sending_options = self.api.ret_additional_sending_options(tracking=True)
@@ -62,7 +70,7 @@ class Send(object):
             to=self.to,
             subject=self.subject,
             html=self.html,
-            text="",
+            text=self.text,
             additional_sending_options=sending_options
         )
         print(ser)
@@ -72,6 +80,7 @@ if (not args.to):      argparse_success = False;
 if (not args.subject): argparse_success = False;
 if (not args.tag):     argparse_success = False;
 if (not args.html):    argparse_success = False;
+if (not args.text):    argparse_success = False;
 
 if not argparse_success:
     print("[-] Mandatory arguments:")
@@ -83,7 +92,8 @@ send_object = Send(
     args.to,
     args.subject,
     args.tag,
-    args.html
+    args.html,
+    args.text
 )
 
 send_object.printConfig()

@@ -40,7 +40,6 @@ class TemplateParser(object):
         print("\n[+] Template saved")
 
 
-
 template_parser_object = TemplateParser(args.template_path)
 template_parser_object.unminify()
 template_parser_object.inilineCSS()
