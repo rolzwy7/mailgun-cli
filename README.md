@@ -1,12 +1,10 @@
-# mailgun-cli
-Mailgun Cli
+# Mailgun-cli
 
-Urls:
-[Mailtester][mailtester]
-[Sendscore][sendscore]
+---
+This is a set of console tools for sending mailing through [Mailgun](https://www.mailgun.com/).
 
-[*] To-Do:
-threaded dns check
-
-[mailtester]: https://www.mail-tester.com/
-[sendscore]: https://senderscore.org
+It's capable of:
+- preparing HTML template for sending.
+- sending mailing.
+- creating reports based on Mailgun tags.
+- retrieving a list of unsubscribes and suppressions.
